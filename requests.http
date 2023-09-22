@@ -1,0 +1,32 @@
+### GET balcance
+GET localhost:9000/wallets/foo
+
+### GET pending commands
+GET localhost:9000/wallets/foo/pending
+
+### deposit
+POST localhost:9000/wallets/foo/deposit
+Content-Type: application/json
+
+{
+  "amount": 300,
+  "commandId": "{{$random.uuid}}"
+}
+
+### withdraw
+POST localhost:9000/wallets/foo/withdraw
+Content-Type: application/json
+
+{
+  "amount": 200,
+  "commandId": "{{$random.uuid}}"
+}
+
+### withdraw
+POST localhost:9000/wallets/foo/withdraw
+Content-Type: application/json
+
+{
+  "amount": 200,
+  "commandId": "{{$random.uuid}}"
+}
