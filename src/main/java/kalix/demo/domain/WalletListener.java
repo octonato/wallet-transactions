@@ -37,16 +37,6 @@ public class WalletListener  extends Action {
     return effects().asyncReply(confirmation);
   }
 
-  public Effect<Done> onEvent(Wallet.Withdrew evt) {
-    var confirmation =
-      componentClient
-        .forEventSourcedEntity(evt.commandId())
-        .call(Transaction::confirm)
-        .params(evt.walletId())
-        .execute();
-
-    return effects().asyncReply(confirmation);
-  }
 
   public Effect<Done> onEvent(Wallet.WithdrawInitiated evt) {
     var confirmation =
@@ -58,5 +48,17 @@ public class WalletListener  extends Action {
 
     return effects().asyncReply(confirmation);
   }
+
+  public Effect<Done> onEvent(Wallet.Withdrew evt) {
+    var confirmation =
+      componentClient
+        .forEventSourcedEntity(evt.commandId())
+        .call(Transaction::confirm)
+        .params(evt.walletId())
+        .execute();
+
+    return effects().asyncReply(confirmation);
+  }
+
 
 }
