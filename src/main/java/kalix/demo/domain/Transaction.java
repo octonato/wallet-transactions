@@ -1,6 +1,8 @@
 package kalix.demo.domain;
 
 import kalix.demo.Done;
+import kalix.javasdk.StatusCode;
+import kalix.javasdk.annotations.Acl;
 import kalix.javasdk.annotations.EventHandler;
 import kalix.javasdk.annotations.Id;
 import kalix.javasdk.annotations.TypeId;
@@ -40,6 +42,13 @@ public class Transaction extends EventSourcedEntity<Transaction.State, Transacti
   public record TransactionAlreadyCreated(String commandId, String walletId) implements Event {
   }
 
+  public record TransactionStatus(String id, String walletId, boolean closed) {
+
+    static TransactionStatus of(State state) {
+      return new TransactionStatus(state.id, state.walletId, state.confirmed);
+    }
+  }
+
 
   @Override
   public State emptyState() {
@@ -63,10 +72,10 @@ public class Transaction extends EventSourcedEntity<Transaction.State, Transacti
 
   @PostMapping("/confirm/{walletId}")
   public Effect<Done> confirm(@PathVariable String walletId) {
-      logger.info("Closing transaction: '{}'", commandContext().entityId());
-      return effects()
-        .emitEvent(new TransactionConfirmed(commandContext().entityId(), walletId))
-        .thenReply(st -> new Done());
+    logger.info("Closing transaction: '{}'", commandContext().entityId());
+    return effects()
+      .emitEvent(new TransactionConfirmed(commandContext().entityId(), walletId))
+      .thenReply(st -> new Done());
   }
 
   @EventHandler
@@ -84,4 +93,11 @@ public class Transaction extends EventSourcedEntity<Transaction.State, Transacti
     return currentState();
   }
 
+  @GetMapping
+  public Effect<TransactionStatus> getStatus() {
+    if (currentState() == null)
+      return effects().error("Not available", StatusCode.ErrorCode.NOT_FOUND);
+    else
+      return effects().reply(TransactionStatus.of(currentState()));
+  }
 }

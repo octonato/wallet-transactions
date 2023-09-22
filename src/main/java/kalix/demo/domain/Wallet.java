@@ -94,9 +94,9 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
     }
   }
 
-  public record WalletStatus(Double balance, Double reservedFunds, Map<String, PendingCommand> pendingCommands) {
+  public record WalletStatus(Double balance, Double reservedFunds, Collection<PendingCommand> pendingCommands) {
     static WalletStatus of(State state) {
-      return new WalletStatus(state.balance, state.reserved, state.pendingCommands);
+      return new WalletStatus(state.balance, state.reserved, state.pendingCommands.values());
     }
   }
 
