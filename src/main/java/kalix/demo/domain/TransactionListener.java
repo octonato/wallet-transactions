@@ -17,26 +17,25 @@ public class TransactionListener extends Action {
     this.componentClient = componentClient;
   }
 
+
   public Effect<Done> onEvent(TransactionCreated evt) {
-    var confirmation =
+    var call =
       componentClient
         .forEventSourcedEntity(evt.walletId())
         .call(Wallet::execute)
-        .params(evt.commandId())
-        .execute();
+        .params(evt.commandId());
 
-    return effects().asyncReply(confirmation);
+    return effects().forward(call);
   }
 
   public Effect<Done> onEvent(TransactionAlreadyCreated evt) {
-    var confirmation =
+    var call =
       componentClient
         .forEventSourcedEntity(evt.walletId())
         .call(Wallet::cancel)
-        .params(evt.commandId())
-        .execute();
+        .params(evt.commandId());
 
-    return effects().asyncReply(confirmation);
+    return effects().forward(call);
   }
 
 }

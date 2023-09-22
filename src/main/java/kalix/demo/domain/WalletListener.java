@@ -17,48 +17,44 @@ public class WalletListener  extends Action {
   }
 
   public Effect<Done> onEvent(DepositInitiated evt) {
-    var confirmation =
+    var call =
       componentClient
         .forEventSourcedEntity(evt.commandId())
         .call(Transaction::createTransaction)
-        .params(evt.walletId())
-        .execute();
+        .params(evt.walletId());
 
-    return effects().asyncReply(confirmation);
+    return effects().forward(call);
   }
 
   public Effect<Done> onEvent(Deposited evt) {
-    var confirmation =
+    var call =
       componentClient
         .forEventSourcedEntity(evt.commandId())
         .call(Transaction::confirm)
-        .params(evt.walletId())
-        .execute();
+        .params(evt.walletId());
 
-    return effects().asyncReply(confirmation);
+    return effects().forward(call);
   }
 
 
   public Effect<Done> onEvent(WithdrawInitiated evt) {
-    var confirmation =
+    var call =
       componentClient
         .forEventSourcedEntity(evt.commandId())
         .call(Transaction::createTransaction)
-        .params(evt.walletId())
-        .execute();
+        .params(evt.walletId());
 
-    return effects().asyncReply(confirmation);
+    return effects().forward(call);
   }
 
   public Effect<Done> onEvent(Withdrew evt) {
-    var confirmation =
+    var call =
       componentClient
         .forEventSourcedEntity(evt.commandId())
         .call(Transaction::confirm)
-        .params(evt.walletId())
-        .execute();
+        .params(evt.walletId());
 
-    return effects().asyncReply(confirmation);
+    return effects().forward(call);
   }
 
 
