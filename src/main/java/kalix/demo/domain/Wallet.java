@@ -1,6 +1,9 @@
 package kalix.demo.domain;
 
 import kalix.demo.Done;
+import kalix.demo.domain.Wallet.PendingCommand.PendingDeposit;
+import kalix.demo.domain.Wallet.PendingCommand.PendingWithdraw;
+import kalix.demo.domain.Wallet.Event.*;
 import kalix.javasdk.annotations.EventHandler;
 import kalix.javasdk.annotations.Id;
 import kalix.javasdk.annotations.TypeId;
@@ -100,38 +103,39 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
     }
   }
 
-  interface Event {
-  }
-
-  interface PendingCommand {
+  sealed interface PendingCommand {
     String commandId();
 
     Double amount();
-  }
 
-  public record PendingDeposit(Double amount, String commandId) implements PendingCommand {
-  }
+    record PendingDeposit(Double amount, String commandId) implements PendingCommand {
+    }
 
-  public record PendingWithdraw(Double amount, String commandId) implements PendingCommand {
-  }
-
-  public record DepositInitiated(Double amount, String commandId, String walletId) implements Event {
-  }
-
-  public record WithdrawInitiated(Double amount, String commandId, String walletId) implements Event {
-  }
-
-  public record Deposited(Double amount, String commandId, String walletId) implements Event {
+    record PendingWithdraw(Double amount, String commandId) implements PendingCommand {
+    }
   }
 
 
-  public record Withdrew(Double amount, String commandId, String walletId) implements Event {
+  sealed interface Event {
+
+    record DepositInitiated(Double amount, String commandId, String walletId) implements Event {
+
+    }
+
+    record WithdrawInitiated(Double amount, String commandId, String walletId) implements Event {
+    }
+
+    record Deposited(Double amount, String commandId, String walletId) implements Event {
+    }
+
+
+    record Withdrew(Double amount, String commandId, String walletId) implements Event {
+    }
+
+
+    record Cancelled(String commandId) implements Event {
+    }
   }
-
-
-  public record Cancelled(String commandId) implements Event {
-  }
-
 
   public record Deposit(Double amount, String commandId) {
   }
@@ -139,8 +143,6 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
   public record Withdraw(Double amount, String commandId) {
   }
 
-  public record Balance(Double amount) {
-  }
 
   @Override
   public State emptyState() {
@@ -248,7 +250,6 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
   public Effect<Set<String>> getPendingTransactions() {
     return effects().reply(currentState().pendingTransactions());
   }
-
 
 
 }
