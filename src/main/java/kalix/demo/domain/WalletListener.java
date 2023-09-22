@@ -1,6 +1,7 @@
 package kalix.demo.domain;
 
 import kalix.demo.Done;
+import kalix.demo.domain.Wallet.Event.*;
 import kalix.javasdk.action.Action;
 import kalix.javasdk.annotations.Subscribe;
 import kalix.javasdk.client.ComponentClient;
@@ -15,7 +16,7 @@ public class WalletListener  extends Action {
     this.componentClient = componentClient;
   }
 
-  public Effect<Done> onEvent(Wallet.DepositInitiated evt) {
+  public Effect<Done> onEvent(DepositInitiated evt) {
     var confirmation =
       componentClient
         .forEventSourcedEntity(evt.commandId())
@@ -26,7 +27,7 @@ public class WalletListener  extends Action {
     return effects().asyncReply(confirmation);
   }
 
-  public Effect<Done> onEvent(Wallet.Deposited evt) {
+  public Effect<Done> onEvent(Deposited evt) {
     var confirmation =
       componentClient
         .forEventSourcedEntity(evt.commandId())
@@ -38,7 +39,7 @@ public class WalletListener  extends Action {
   }
 
 
-  public Effect<Done> onEvent(Wallet.WithdrawInitiated evt) {
+  public Effect<Done> onEvent(WithdrawInitiated evt) {
     var confirmation =
       componentClient
         .forEventSourcedEntity(evt.commandId())
@@ -49,7 +50,7 @@ public class WalletListener  extends Action {
     return effects().asyncReply(confirmation);
   }
 
-  public Effect<Done> onEvent(Wallet.Withdrew evt) {
+  public Effect<Done> onEvent(Withdrew evt) {
     var confirmation =
       componentClient
         .forEventSourcedEntity(evt.commandId())

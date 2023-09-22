@@ -1,6 +1,8 @@
 package kalix.demo.domain;
 
 import kalix.demo.Done;
+import kalix.demo.domain.Transaction.Event.TransactionCreated;
+import kalix.demo.domain.Transaction.Event.TransactionAlreadyCreated;
 import kalix.javasdk.action.Action;
 import kalix.javasdk.annotations.Subscribe;
 import kalix.javasdk.client.ComponentClient;
@@ -15,7 +17,7 @@ public class TransactionListener extends Action {
     this.componentClient = componentClient;
   }
 
-  public Effect<Done> onEvent(Transaction.TransactionCreated evt) {
+  public Effect<Done> onEvent(TransactionCreated evt) {
     var confirmation =
       componentClient
         .forEventSourcedEntity(evt.walletId())
@@ -26,7 +28,7 @@ public class TransactionListener extends Action {
     return effects().asyncReply(confirmation);
   }
 
-  public Effect<Done> onEvent(Transaction.TransactionAlreadyCreated evt) {
+  public Effect<Done> onEvent(TransactionAlreadyCreated evt) {
     var confirmation =
       componentClient
         .forEventSourcedEntity(evt.walletId())

@@ -1,6 +1,9 @@
 package kalix.demo.domain;
 
 import kalix.demo.Done;
+import kalix.demo.domain.Transaction.Event.TransactionAlreadyCreated;
+import kalix.demo.domain.Transaction.Event.TransactionConfirmed;
+import kalix.demo.domain.Transaction.Event.TransactionCreated;
 import kalix.javasdk.StatusCode;
 import kalix.javasdk.annotations.Acl;
 import kalix.javasdk.annotations.EventHandler;
@@ -30,24 +33,25 @@ public class Transaction extends EventSourcedEntity<Transaction.State, Transacti
     }
   }
 
-  interface Event {
+ sealed  interface Event {
+
+
+   record TransactionCreated(String commandId, String walletId) implements Event {
   }
 
-  public record TransactionCreated(String commandId, String walletId) implements Event {
+   record TransactionConfirmed(String commandId, String walletId) implements Event {
   }
 
-  public record TransactionConfirmed(String commandId, String walletId) implements Event {
+   record TransactionAlreadyCreated(String commandId, String walletId) implements Event {
   }
-
-  public record TransactionAlreadyCreated(String commandId, String walletId) implements Event {
-  }
-
+ }
   public record TransactionStatus(String id, String walletId, boolean closed) {
 
     static TransactionStatus of(State state) {
       return new TransactionStatus(state.id, state.walletId, state.confirmed);
     }
   }
+
 
 
   @Override
