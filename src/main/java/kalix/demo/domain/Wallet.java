@@ -1,9 +1,12 @@
 package kalix.demo.domain;
 
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
+import io.vavr.collection.Set;
 import kalix.demo.Done;
+import kalix.demo.domain.Wallet.Event.*;
 import kalix.demo.domain.Wallet.PendingCommand.PendingDeposit;
 import kalix.demo.domain.Wallet.PendingCommand.PendingWithdraw;
-import kalix.demo.domain.Wallet.Event.*;
 import kalix.javasdk.annotations.EventHandler;
 import kalix.javasdk.annotations.Id;
 import kalix.javasdk.annotations.TypeId;
@@ -13,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 
 @TypeId("wallet")
 @Id("walletId")
@@ -45,30 +48,34 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
       return new State(balance - amount, reserved + amount, pendingCommands);
     }
 
-    State unreserve(Double amount) {
-      logger.info("Unreserving funds '{}'", amount);
+    State unReserve(Double amount) {
+      logger.info("Un-reserving funds '{}'", amount);
       return new State(balance + amount, reserved - amount, pendingCommands);
     }
 
     State execute(String commandId) {
-      var cmd = pendingCommands.remove(commandId);
-      if (cmd instanceof PendingWithdraw) {
-        return unreserve(cmd.amount()).decreaseBalance(cmd.amount());
-      } else {
-        return increaseBalance(cmd.amount());
-      }
+      return pendingCommands
+        .get(commandId)
+        .map(cmd -> {
+          if (cmd instanceof PendingWithdraw) {
+            return removePendingCommand(cmd).decreaseBalance(cmd.amount());
+          } else {
+            return removePendingCommand(cmd).increaseBalance(cmd.amount());
+          }
+        })
+        .getOrElse(this);
     }
 
     State cancel(String commandId) {
-      var cmd = pendingCommands.remove(commandId);
-      if (cmd instanceof PendingWithdraw) {
-        return unreserve(cmd.amount());
-      }
-      return this;
+      return pendingCommands
+        .get(commandId)
+        .map(this::removePendingCommand)
+        .getOrElse(this);
     }
 
+
     PendingCommand getCommand(String commandId) {
-      return pendingCommands.get(commandId);
+      return pendingCommands.get(commandId).get();
     }
 
     boolean isPendingCommand(String commandId) {
@@ -76,20 +83,26 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
     }
 
     State addPendingCommand(PendingCommand cmd) {
-      pendingCommands.put(cmd.commandId(), cmd);
+      var newState = new State(balance, reserved, pendingCommands.put(cmd.commandId(), cmd));
       if (cmd instanceof PendingWithdraw) {
-        return reserve(cmd.amount());
+        return newState.reserve(cmd.amount());
       }
-      return this;
+      return newState;
     }
 
-    State removePendingCommand(String commandId) {
-      pendingCommands.remove(commandId);
-      return this;
-    }
 
-    public Set<String> pendingTransactions() {
-      return pendingCommands.keySet();
+    State removePendingCommand(PendingCommand pending) {
+      return pendingCommands
+        .get(pending.commandId())
+        .map(cmd -> {
+          var newState = new State(balance, reserved, pendingCommands.remove(cmd.commandId()));
+          if (cmd instanceof PendingWithdraw) {
+            return newState.unReserve(cmd.amount());
+          } else {
+            return newState;
+          }
+        })
+        .getOrElse(this);
     }
 
     public boolean hasBalance(Double amount) {
@@ -97,9 +110,9 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
     }
   }
 
-  public record WalletStatus(Double balance, Double reservedFunds, Collection<PendingCommand> pendingCommands) {
+  public record WalletStatus(Double balance, Double reservedFunds, List<PendingCommand> pendingCommands) {
     static WalletStatus of(State state) {
-      return new WalletStatus(state.balance, state.reserved, state.pendingCommands.values());
+      return new WalletStatus(state.balance, state.reserved, state.pendingCommands.values().asJava());
     }
   }
 
@@ -146,7 +159,7 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
 
   @Override
   public State emptyState() {
-    return new State(0.0, 0.0, new HashMap<>());
+    return new State(0.0, 0.0, HashMap.empty());
   }
 
   @PostMapping("/deposit")
@@ -244,12 +257,5 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
   public Effect<WalletStatus> getStatus() {
     return effects().reply(WalletStatus.of(currentState()));
   }
-
-
-  @GetMapping("/pending")
-  public Effect<Set<String>> getPendingTransactions() {
-    return effects().reply(currentState().pendingTransactions());
-  }
-
 
 }
