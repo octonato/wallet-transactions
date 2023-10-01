@@ -1,0 +1,35 @@
+### create aaa-1
+POST localhost:9000/wallets/aaa-1
+
+### deposit aaa-1
+POST localhost:9000/wallets/aaa-1/deposit
+Content-Type: application/json
+
+{
+  "amount": 50,
+  "transactionId": "{{$random.uuid}}"
+}
+
+
+### transfer workflow
+PUT localhost:9000/transfer/workflow/abc-1
+Content-Type: application/json
+
+{
+  "amount": 25,
+  "from": "aaa-1",
+  "to": "bbb-1"
+}
+
+### GET transfer workflow
+GET localhost:9000/transfer/workflow/abc-1
+
+
+### GET balance aaa-1
+GET localhost:9000/wallets/aaa-1
+
+### create bbb
+POST localhost:9000/wallets/bbb-1
+
+### GET balance bbb
+GET localhost:9000/wallets/bbb-1

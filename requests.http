@@ -13,19 +13,13 @@ Content-Type: application/json
 ### GET balance aaa
 GET localhost:9000/wallets/aaa
 
-### create bbb
-POST localhost:9000/wallets/bbb
-
-### GET balance bbb
-GET localhost:9000/wallets/bbb
 
 ### transfer
-POST localhost:9000/wallets/transfer
+POST localhost:9000/wallets/transfer/abc
 Content-Type: application/json
 
 {
   "amount": 25,
-  "transactionId":"abc",
   "from": "aaa",
   "to": "bbb"
 }
@@ -33,3 +27,9 @@ Content-Type: application/json
 ### transfer status
 GET localhost:9000/transactions/abc
 
+
+### create bbb
+POST localhost:9000/wallets/bbb
+
+### GET balance bbb
+GET localhost:9000/wallets/bbb

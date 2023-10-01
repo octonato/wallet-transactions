@@ -116,7 +116,7 @@ public class TransactionMediator
   public record Create(java.util.List<Participant> participants) {
   }
 
-  sealed interface Event {
+  public sealed interface Event {
 
     record Created(String transactionId, java.util.List<Participant> participants) implements Event {
     }

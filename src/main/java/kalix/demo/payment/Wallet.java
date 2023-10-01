@@ -122,6 +122,10 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
     public boolean hasBalance(Double amount) {
       return balance - amount >= 0;
     }
+
+    public boolean isExecutedTransaction(String transactionId) {
+      return executedTransactions.contains(transactionId);
+    }
   }
 
   public record WalletStatus(Double balance, Double reservedFunds,
@@ -215,6 +219,7 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
     return effects().error("Wallet doesn't exist", StatusCode.ErrorCode.NOT_FOUND);
   }
 
+  private final Effect<Done> doneEffect = effects().reply(new Done());
 
   @PostMapping("/withdraw")
   public Effect<WalletStatus> withdraw(@RequestBody Withdraw cmd) {
@@ -255,32 +260,35 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
           .emitEvent(new BalanceDecreased(cmd.amount(), cmd.transactionId(), this.walletId))
           .thenReply(__ -> new Done());
       }
-
     }
-    return effects().reply(new Done());
+    return doneEffect;
   }
 
 
   @PostMapping("/transaction/cancel/{transactionId}")
   public Effect<Done> cancel(@PathVariable String transactionId) {
     if (currentState() == null) {
-      return notFound();
+      return doneEffect;
     } else if (currentState().isPendingTransaction(transactionId)) {
       logger.info("Transaction cancelled '{}' on '{}'", currentState().getTransaction(transactionId), walletId);
       return effects()
         .emitEvent(new TransactionCancelled(transactionId))
         .thenReply(__ -> new Done());
     } else {
-      return effects().reply(new Done());
+      return doneEffect;
     }
   }
 
   @PostMapping("/transaction/complete/{transactionId}")
   public Effect<Done> complete(@PathVariable String transactionId) {
-    logger.info("Transaction completed '{}' on '{}'", transactionId, walletId);
-    return effects()
-      .emitEvent(new TransactionCompleted(transactionId))
-      .thenReply(__ -> new Done());
+    if (currentState().isExecutedTransaction(transactionId)) {
+      logger.info("Transaction completed '{}' on '{}'", transactionId, walletId);
+      return effects()
+        .emitEvent(new TransactionCompleted(transactionId))
+        .thenReply(__ -> new Done());
+    } else {
+      return doneEffect;
+    }
   }
 
   @EventHandler

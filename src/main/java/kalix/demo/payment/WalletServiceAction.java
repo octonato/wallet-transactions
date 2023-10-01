@@ -22,14 +22,13 @@ public class WalletServiceAction extends Action {
     this.componentClient = componentClient;
   }
 
-  public record Transfer(String transactionId, Double amount, String from, String to) {}
 
   @PostMapping("/{walletId}")
   public Effect<Done> create(@PathVariable String walletId) {
     var create =
-        componentClient
-          .forEventSourcedEntity(walletId)
-          .call(Wallet::create);
+      componentClient
+        .forEventSourcedEntity(walletId)
+        .call(Wallet::create);
 
     return effects().forward(create);
   }
@@ -89,32 +88,32 @@ public class WalletServiceAction extends Action {
     return effects().forward(status);
   }
 
-  @PostMapping("/transfer")
-  public Effect<TransactionMediator.TransactionStatus> transfer(@RequestBody Transfer cmd) {
+  @PostMapping("/transfer/{transactionId}")
+  public Effect<TransactionMediator.TransactionStatus> transfer(@PathVariable String transactionId, @RequestBody Transfer cmd) {
 
     var createTxCmd = new TransactionMediator.Create(
       List.of(
-        Participant.of(cmd.from, Wallet.class),
-        Participant.of(cmd.to, Wallet.class)
+        Participant.of(cmd.from(), Wallet.class),
+        Participant.of(cmd.to(), Wallet.class)
       ));
     var tx =
       componentClient
-        .forEventSourcedEntity(cmd.transactionId())
+        .forEventSourcedEntity(transactionId)
         .call(TransactionMediator::create)
         .params(createTxCmd)
         .execute();
 
-      componentClient
-        .forEventSourcedEntity(cmd.from)
-        .call(Wallet::withdraw)
-        .params(new Wallet.Withdraw(cmd.amount, cmd.transactionId))
-        .execute();
+    componentClient
+      .forEventSourcedEntity(cmd.from())
+      .call(Wallet::withdraw)
+      .params(new Wallet.Withdraw(cmd.amount(), transactionId))
+      .execute();
 
-      componentClient
-        .forEventSourcedEntity(cmd.to)
-        .call(Wallet::deposit)
-        .params(new Wallet.Deposit(cmd.amount, cmd.transactionId))
-        .execute();
+    componentClient
+      .forEventSourcedEntity(cmd.to())
+      .call(Wallet::deposit)
+      .params(new Wallet.Deposit(cmd.amount(), transactionId))
+      .execute();
 
     return effects().asyncReply(tx);
   }
