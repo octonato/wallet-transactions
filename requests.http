@@ -1,32 +1,35 @@
-### GET balcance
-GET localhost:9000/wallets/foo
+### create aaa
+POST localhost:9000/wallets/aaa
 
-### GET pending commands
-GET localhost:9000/wallets/foo/pending
-
-### deposit
-POST localhost:9000/wallets/foo/deposit
+### deposit aaa
+POST localhost:9000/wallets/aaa/deposit
 Content-Type: application/json
 
 {
-  "amount": 300,
-  "commandId": "{{$random.uuid}}"
+  "amount": 50,
+  "transactionId": "{{$random.uuid}}"
 }
 
-### withdraw
-POST localhost:9000/wallets/foo/withdraw
+### GET balance aaa
+GET localhost:9000/wallets/aaa
+
+
+### transfer
+POST localhost:9000/wallets/transfer/abc
 Content-Type: application/json
 
 {
-  "amount": 200,
-  "commandId": "{{$random.uuid}}"
+  "amount": 25,
+  "from": "aaa",
+  "to": "bbb"
 }
 
-### withdraw
-POST localhost:9000/wallets/foo/withdraw
-Content-Type: application/json
+### transfer status
+GET localhost:9000/transactions/abc
 
-{
-  "amount": 200,
-  "commandId": "{{$random.uuid}}"
-}
+
+### create bbb
+POST localhost:9000/wallets/bbb
+
+### GET balance bbb
+GET localhost:9000/wallets/bbb
