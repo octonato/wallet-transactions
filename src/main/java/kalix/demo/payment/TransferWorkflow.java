@@ -159,7 +159,7 @@ public class TransferWorkflow extends Workflow<TransferWorkflow.State> {
         .andThen(Wallet.WalletStatus.class, __ ->
           effects()
             .updateState(currentState().depositRequested())
-            .pause());
+            .end());
 
     var cancel =
       step("cancel")
