@@ -12,7 +12,7 @@ Content-Type: application/json
 
 
 ### transfer workflow
-PUT localhost:9000/transfer/workflow/abc-1
+PUT localhost:9000/transfer/workflow/abc-2
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 }
 
 ### GET transfer workflow
-GET localhost:9000/transfer/workflow/abc-1
+GET localhost:9000/transfer/workflow/abc-2
 
 
 ### GET balance aaa-1

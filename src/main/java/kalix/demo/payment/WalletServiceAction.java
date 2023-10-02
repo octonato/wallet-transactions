@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RequestMapping("/wallets")
 public class WalletServiceAction extends Action {
@@ -34,7 +35,7 @@ public class WalletServiceAction extends Action {
   }
 
   @PostMapping("/{walletId}/deposit")
-  public Effect<Wallet.WalletStatus> deposit(@PathVariable String walletId, @RequestBody Wallet.Deposit cmd) {
+  public Effect<Wallet.WalletStatus> deposit(@PathVariable String walletId, @RequestBody Wallet.Deposit cmd) throws ExecutionException, InterruptedException {
 
     logger.info("deposit {}", cmd);
     var createTxCmd = new TransactionMediator.Create(List.of(Participant.of(walletId, Wallet.class)));
@@ -52,9 +53,11 @@ public class WalletServiceAction extends Action {
         .call(Wallet::deposit)
         .params(cmd);
 
-    var res = tx.thenCompose(done -> deposit.execute());
+    var res =
+      tx.thenApply(done -> effects().forward(deposit))
+        .exceptionally(exp -> effects().error(exp.getCause().getMessage()));
 
-    return effects().asyncReply(res);
+    return effects().asyncEffect(res);
   }
 
   @PostMapping("/{walletId}/withdraw")
@@ -68,14 +71,17 @@ public class WalletServiceAction extends Action {
         .params(createTxCmd)
         .execute();
 
-    var deposit =
+    var withdraw =
       componentClient
         .forEventSourcedEntity(walletId)
         .call(Wallet::withdraw)
         .params(cmd);
 
-    var res = tx.thenCompose(done -> deposit.execute());
-    return effects().asyncReply(res);
+    var res =
+      tx.thenApply(done -> effects().forward(withdraw))
+        .exceptionally(exp -> effects().error(exp.getCause().getMessage()));
+
+    return effects().asyncEffect(res);
   }
 
   @GetMapping("/{walletId}")

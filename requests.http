@@ -27,6 +27,8 @@ Content-Type: application/json
 ### transfer status
 GET localhost:9000/transactions/abc
 
+### cancel
+POST localhost:9000/transactions/abc/cancel
 
 ### create bbb
 POST localhost:9000/wallets/bbb
