@@ -1,0 +1,29 @@
+version: "3"
+services:
+  postgres-db:
+    image: postgres:14
+    container_name: proxy-postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  kalix-proxy:
+    image: gcr.io/kalix-public/kalix-proxy-postgres:latest
+    ports:
+      - "9000:9000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      JAVA_TOOL_OPTIONS: >
+        -Dconfig.resource=postgres-dev-mode.conf
+        -Dlogback.configurationFile=logback-dev-mode.xml
+        -Dkalix.proxy.backoffice.server-reflection-enabled=true
+        -Dkalix.proxy.eventing.event-sourced-entity-eventing.number-of-projection-instances=1
+        -Dkalix.proxy.eventing.value-entity-eventing.number-of-projection-instances=1
+        -Dkalix.proxy.eventing.direct-eventing.number-of-projection-instances=1
+      USER_FUNCTION_HOST: ${USER_FUNCTION_HOST:-host.docker.internal}
+      USER_FUNCTION_PORT: ${USER_FUNCTION_PORT:-8080}
+      ACL_ENABLED: 'false'
+      DB_HOST: postgres-db
