@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
 @RequestMapping("/wallets")
@@ -53,9 +54,13 @@ public class WalletServiceAction extends Action {
         .call(Wallet::deposit)
         .params(cmd);
 
-    var res =
-      tx.thenApply(done -> effects().forward(deposit))
-        .exceptionally(exp -> effects().error(exp.getCause().getMessage()));
+    CompletionStage<Effect<Wallet.WalletStatus>> res =
+      tx.thenApply(status -> {
+        if (status.status().isTerminated())
+          return effects().error("Transaction " + cmd.transactionId() + " already created");
+        else
+          return effects().forward(deposit);
+      });
 
     return effects().asyncEffect(res);
   }
@@ -77,9 +82,13 @@ public class WalletServiceAction extends Action {
         .call(Wallet::withdraw)
         .params(cmd);
 
-    var res =
-      tx.thenApply(done -> effects().forward(withdraw))
-        .exceptionally(exp -> effects().error(exp.getCause().getMessage()));
+    CompletionStage<Effect<Wallet.WalletStatus>> res =
+      tx.thenApply(status -> {
+        if (status.status().isTerminated())
+          return effects().error("Transaction " + cmd.transactionId() + " already created");
+        else
+          return effects().forward(withdraw);
+      });
 
     return effects().asyncEffect(res);
   }

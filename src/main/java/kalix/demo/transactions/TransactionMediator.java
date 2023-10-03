@@ -46,11 +46,15 @@ public class TransactionMediator
     }
   }
 
-  enum Status {
+  public enum Status {
     WAITING,
     INITIATED,
     CANCELLED,
-    COMPLETED
+    COMPLETED;
+
+    public boolean isTerminated() {
+      return this == CANCELLED || this == COMPLETED;
+    }
   }
 
   public record State(String transactionId, Map<String, Participant> participants, Status status) {
@@ -158,10 +162,16 @@ public class TransactionMediator
 
     } else if (currentState().isCancelled()) {
       logger.info("Cancelled transaction: '{}'", transactionId);
-      return effects().error("Transaction exists but was cancelled");
+      // FIXME: component client is removing the error message and therefore
+      // clients can react accordingly
+      // return effects().error("Transaction exists but was cancelled");
+      return effects().reply(TransactionStatus.of(currentState()));
 
     } else if (currentState().allJoined()) {
-      return effects().error("Transaction already in progress");
+      // FIXME: component client is removing the error message and therefore
+      // clients can react accordingly
+      // return effects().error("Transaction already in progress");
+      return effects().reply(TransactionStatus.of(currentState()));
 
     } else {
       // TODO: check if existing transaction contain same participants
