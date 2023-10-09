@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   kalix-proxy:
-    image: gcr.io/kalix-public/kalix-proxy-postgres:latest
+    image: gcr.io/kalix-public/kalix-proxy-postgres:1.1.18-5-d27e1396-dev
     ports:
       - "9000:9000"
     extra_hosts:

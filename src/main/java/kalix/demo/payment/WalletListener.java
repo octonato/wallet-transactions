@@ -37,7 +37,7 @@ public class WalletListener extends Action {
     var call =
       componentClient
         .forEventSourcedEntity(evt.transactionId())
-        .call(TransactionMediator::executed)
+        .call(TransactionMediator::confirmExecution)
         .params(evt.walletId());
 
     return effects().forward(call);
@@ -60,7 +60,7 @@ public class WalletListener extends Action {
     var call =
       componentClient
         .forEventSourcedEntity(evt.transactionId())
-        .call(TransactionMediator::executed)
+        .call(TransactionMediator::confirmExecution)
         .params(evt.walletId());
 
     return effects().forward(call);

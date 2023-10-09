@@ -242,8 +242,8 @@ public class TransactionMediator
   }
 
 
-  @PostMapping("/{participantId}/executed")
-  public Effect<Done> executed(@PathVariable String participantId) {
+  @PostMapping("/{participantId}/confirm")
+  public Effect<Done> confirmExecution(@PathVariable String participantId) {
 
     if (currentState().isCancelled()) {
       logger.info("Cancelled transaction '{}' was executed by participant '{}'. THIS IS A BUG!", transactionId, participantId);

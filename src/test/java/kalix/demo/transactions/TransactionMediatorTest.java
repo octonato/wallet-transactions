@@ -73,7 +73,7 @@ public class TransactionMediatorTest {
     }
 
     {
-      var result = mediator.call(m -> m.executed("foo"));
+      var result = mediator.call(m -> m.confirmExecution("foo"));
       result.getNextEventOfType(TransactionMediator.Event.ParticipantExecuted.class);
 
       var state = (TransactionMediator.State) result.getUpdatedState();
@@ -85,7 +85,7 @@ public class TransactionMediatorTest {
     }
 
     {
-      var result = mediator.call(m -> m.executed("bar"));
+      var result = mediator.call(m -> m.confirmExecution("bar"));
       result.getNextEventOfType(TransactionMediator.Event.ParticipantExecuted.class);
       result.getNextEventOfType(TransactionMediator.Event.Completed.class);
 
