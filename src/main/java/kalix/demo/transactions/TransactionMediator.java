@@ -8,6 +8,7 @@ import kalix.javasdk.StatusCode;
 import kalix.javasdk.annotations.EventHandler;
 import kalix.javasdk.annotations.Id;
 import kalix.javasdk.annotations.TypeId;
+import kalix.javasdk.annotations.TypeName;
 import kalix.javasdk.eventsourcedentity.EventSourcedEntity;
 import kalix.javasdk.eventsourcedentity.EventSourcedEntityContext;
 import org.slf4j.Logger;
@@ -15,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 
-@TypeId("transaction-mediator")
 @Id("id")
+@TypeId("transaction-mediator")
 @RequestMapping("/transactions/{id}")
 public class TransactionMediator
   extends EventSourcedEntity<TransactionMediator.State, TransactionMediator.Event> {
@@ -122,21 +123,27 @@ public class TransactionMediator
 
   public sealed interface Event {
 
+    @TypeId("created")
     record Created(String transactionId, java.util.List<Participant> participants) implements Event {
     }
 
+    @TypeId("participant-joined")
     record ParticipantJoined(String transactionId, String participantId) implements Event {
     }
 
+    @TypeId("initialized")
     record Initialized(String transactionId, java.util.List<Participant> participants) implements Event {
     }
 
+    @TypeName("participant-executed")
     record ParticipantExecuted(String transactionId, Participant participant) implements Event {
     }
 
+    @TypeId("completed")
     record Completed(String transactionId, java.util.List<Participant> participants) implements Event {
     }
 
+    @TypeId("cancelled")
     record Cancelled(String transactionId, java.util.List<Participant> participants) implements Event {
     }
   }
