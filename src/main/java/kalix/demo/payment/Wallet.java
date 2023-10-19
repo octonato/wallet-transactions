@@ -9,6 +9,7 @@ import kalix.javasdk.StatusCode;
 import kalix.javasdk.annotations.EventHandler;
 import kalix.javasdk.annotations.Id;
 import kalix.javasdk.annotations.TypeId;
+import kalix.javasdk.annotations.TypeName;
 import kalix.javasdk.eventsourcedentity.EventSourcedEntity;
 import kalix.javasdk.eventsourcedentity.EventSourcedEntityContext;
 import org.slf4j.Logger;
@@ -153,25 +154,31 @@ public class Wallet extends EventSourcedEntity<Wallet.State, Wallet.Event> {
 
   sealed interface Event {
 
+    @TypeName("created")
     record Created() implements Event {
     }
 
+    @TypeName("deposit-initiated")
     record DepositInitiated(Double amount, String transactionId, String walletId) implements Event {
     }
 
+    @TypeName("withdraw-initiated")
     record WithdrawInitiated(Double amount, String transactionId, String walletId) implements Event {
     }
 
+    @TypeName("balance-increased")
     record BalanceIncreased(Double amount, String transactionId, String walletId) implements Event {
     }
 
+    @TypeName("balance-decreased")
     record BalanceDecreased(Double amount, String transactionId, String walletId) implements Event {
     }
 
-
+    @TypeName("transaction-cancelled")
     record TransactionCancelled(String transactionId) implements Event {
     }
 
+    @TypeName("transaction-completed")
     record TransactionCompleted(String transactionId) implements Event {
     }
   }
